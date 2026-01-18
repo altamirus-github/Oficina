@@ -1,4 +1,4 @@
-const API_BASE = window.API_BASE || "http://localhost:8000";
+const API_BASE = window.API_BASE || window.location.origin;
 const TOKEN_KEY = "oficina_token";
 
 const modules = {
