@@ -9,17 +9,17 @@ const modules = {
     caption: "Lista de clientes cadastrados.",
     endpoint: "/clients",
     fields: [
-      { name: "name", label: "Nome", type: "text", required: true },
-      { name: "cpf", label: "CPF", type: "text" },
-      { name: "phone", label: "Telefone", type: "text" },
-      { name: "email", label: "Email", type: "email" },
-      { name: "address.street", label: "Endereco", type: "text" },
-      { name: "address.number", label: "Numero", type: "text" },
-      { name: "address.city", label: "Cidade", type: "text" },
-      { name: "address.state", label: "UF", type: "text" },
-      { name: "address.zipcode", label: "CEP", type: "text" }
+      { name: "name", label: "Nome", type: "text", placeholder: "Ex: Joao Silva", required: true },
+      { name: "cpf", label: "CPF", type: "text", placeholder: "000.000.000-00" },
+      { name: "phone", label: "Telefone", type: "text", placeholder: "(11) 99999-9999" },
+      { name: "email", label: "Email", type: "email", placeholder: "cliente@email.com" },
+      { name: "address.street", label: "Endereco", type: "text", placeholder: "Rua Exemplo" },
+      { name: "address.number", label: "Numero", type: "text", placeholder: "123" },
+      { name: "address.city", label: "Cidade", type: "text", placeholder: "Sao Paulo" },
+      { name: "address.state", label: "UF", type: "text", placeholder: "SP" },
+      { name: "address.zipcode", label: "CEP", type: "text", placeholder: "00000-000" }
     ],
-    columns: ["id", "name", "cpf", "phone", "city", "state"]
+    columns: ["ID", "Nome", "CPF", "Telefone", "Cidade", "UF"]
   },
   vehicles: {
     title: "Veiculos",
@@ -27,16 +27,16 @@ const modules = {
     caption: "Veiculos registrados.",
     endpoint: "/vehicles",
     fields: [
-      { name: "client_id", label: "Cliente ID", type: "number", required: true },
-      { name: "model", label: "Modelo", type: "text", required: true },
-      { name: "brand", label: "Marca", type: "text", required: true },
-      { name: "plate", label: "Placa", type: "text", required: true },
-      { name: "year", label: "Ano", type: "text" },
-      { name: "km_current", label: "KM", type: "number" },
-      { name: "color", label: "Cor", type: "text" },
-      { name: "fuel_type", label: "Combustivel", type: "text" }
+      { name: "client_id", label: "Cliente ID", type: "number", placeholder: "2026", required: true },
+      { name: "model", label: "Modelo", type: "text", placeholder: "Onix", required: true },
+      { name: "brand", label: "Marca", type: "text", placeholder: "Chevrolet", required: true },
+      { name: "plate", label: "Placa", type: "text", placeholder: "ABC-1234", required: true },
+      { name: "year", label: "Ano", type: "text", placeholder: "2020" },
+      { name: "km_current", label: "KM", type: "number", placeholder: "45000" },
+      { name: "color", label: "Cor", type: "text", placeholder: "Prata" },
+      { name: "fuel_type", label: "Combustivel", type: "text", placeholder: "Flex" }
     ],
-    columns: ["id", "client_id", "brand", "model", "plate", "year", "actions"]
+    columns: ["ID", "Cliente", "Marca", "Modelo", "Placa", "Ano", "Acoes"]
   },
   providers: {
     title: "Fornecedores",
@@ -44,18 +44,18 @@ const modules = {
     caption: "Fornecedores ativos.",
     endpoint: "/providers",
     fields: [
-      { name: "name", label: "Nome", type: "text", required: true },
-      { name: "cnpj", label: "CNPJ", type: "text" },
-      { name: "phone", label: "Telefone", type: "text" },
-      { name: "email", label: "Email", type: "email" },
-      { name: "website", label: "Site", type: "text" },
-      { name: "address.street", label: "Endereco", type: "text" },
-      { name: "address.number", label: "Numero", type: "text" },
-      { name: "address.city", label: "Cidade", type: "text" },
-      { name: "address.state", label: "UF", type: "text" },
-      { name: "address.zipcode", label: "CEP", type: "text" }
+      { name: "name", label: "Nome", type: "text", placeholder: "Fornecedor X", required: true },
+      { name: "cnpj", label: "CNPJ", type: "text", placeholder: "00.000.000/0000-00" },
+      { name: "phone", label: "Telefone", type: "text", placeholder: "(11) 3000-0000" },
+      { name: "email", label: "Email", type: "email", placeholder: "contato@fornecedor.com" },
+      { name: "website", label: "Site", type: "text", placeholder: "https://fornecedor.com" },
+      { name: "address.street", label: "Endereco", type: "text", placeholder: "Rua Exemplo" },
+      { name: "address.number", label: "Numero", type: "text", placeholder: "500" },
+      { name: "address.city", label: "Cidade", type: "text", placeholder: "Rio de Janeiro" },
+      { name: "address.state", label: "UF", type: "text", placeholder: "RJ" },
+      { name: "address.zipcode", label: "CEP", type: "text", placeholder: "00000-000" }
     ],
-    columns: ["id", "name", "cnpj", "phone", "city", "state"]
+    columns: ["ID", "Nome", "CNPJ", "Telefone", "Cidade", "UF"]
   },
   products: {
     title: "Produtos",
@@ -63,15 +63,15 @@ const modules = {
     caption: "Produtos cadastrados.",
     endpoint: "/products",
     fields: [
-      { name: "provider_id", label: "Fornecedor ID", type: "number" },
-      { name: "name", label: "Nome", type: "text", required: true },
-      { name: "category", label: "Categoria", type: "text" },
-      { name: "price", label: "Preco", type: "number" },
-      { name: "barcode", label: "Codigo", type: "text" },
-      { name: "stock_qty", label: "Estoque", type: "number" },
-      { name: "description", label: "Descricao", type: "text" }
+      { name: "provider_id", label: "Fornecedor ID", type: "number", placeholder: "2026" },
+      { name: "name", label: "Nome", type: "text", placeholder: "Filtro de oleo", required: true },
+      { name: "category", label: "Categoria", type: "text", placeholder: "Motor" },
+      { name: "price", label: "Preco", type: "number", placeholder: "99.90" },
+      { name: "barcode", label: "Codigo", type: "text", placeholder: "7890000000000" },
+      { name: "stock_qty", label: "Estoque", type: "number", placeholder: "10" },
+      { name: "description", label: "Descricao", type: "text", placeholder: "Descricao do produto" }
     ],
-    columns: ["id", "name", "category", "price", "stock_qty"]
+    columns: ["ID", "Nome", "Categoria", "Preco", "Estoque"]
   },
   services: {
     title: "Servicos",
@@ -79,11 +79,11 @@ const modules = {
     caption: "Servicos principais.",
     endpoint: "/services",
     fields: [
-      { name: "name", label: "Nome", type: "text", required: true },
-      { name: "base_price", label: "Preco base", type: "number" },
-      { name: "description", label: "Descricao", type: "text" }
+      { name: "name", label: "Nome", type: "text", placeholder: "Troca de oleo", required: true },
+      { name: "base_price", label: "Preco base", type: "number", placeholder: "150.00" },
+      { name: "description", label: "Descricao", type: "text", placeholder: "Descricao do servico" }
     ],
-    columns: ["id", "name", "base_price"]
+    columns: ["ID", "Nome", "Preco base"]
   },
   orders: {
     title: "Ordens",
@@ -91,13 +91,13 @@ const modules = {
     caption: "Ordens abertas e finalizadas.",
     endpoint: "/orders",
     fields: [
-      { name: "client_id", label: "Cliente ID", type: "number", required: true },
-      { name: "vehicle_id", label: "Veiculo ID", type: "number" },
-      { name: "status", label: "Status", type: "text" },
-      { name: "payment_method", label: "Pagamento", type: "text" },
-      { name: "observation", label: "Observacao", type: "text" }
+      { name: "client_id", label: "Cliente ID", type: "number", placeholder: "2026", required: true },
+      { name: "vehicle_id", label: "Veiculo ID", type: "number", placeholder: "2026" },
+      { name: "status", label: "Status", type: "text", placeholder: "Aberto" },
+      { name: "payment_method", label: "Pagamento", type: "text", placeholder: "Credito" },
+      { name: "observation", label: "Observacao", type: "text", placeholder: "Observacoes gerais" }
     ],
-    columns: ["id", "client_id", "vehicle_id", "status", "total"]
+    columns: ["ID", "Cliente", "Veiculo", "Status", "Total"]
   },
   finance: {
     title: "Financeiro",
@@ -115,12 +115,12 @@ const modules = {
         ],
         required: true
       },
-      { name: "description", label: "Descricao", type: "text", required: true },
-      { name: "category", label: "Categoria", type: "text" },
-      { name: "amount", label: "Valor", type: "number", required: true },
-      { name: "reference_order_id", label: "Ordem ID", type: "number" }
+      { name: "description", label: "Descricao", type: "text", placeholder: "Entrada de caixa", required: true },
+      { name: "category", label: "Categoria", type: "text", placeholder: "Servicos" },
+      { name: "amount", label: "Valor", type: "number", placeholder: "250.00", required: true },
+      { name: "reference_order_id", label: "Ordem ID", type: "number", placeholder: "2026" }
     ],
-    columns: ["id", "entry_type", "description", "amount", "category"]
+    columns: ["ID", "Tipo", "Descricao", "Valor", "Categoria"]
   },
   checklists: {
     title: "Checklists",
@@ -128,11 +128,11 @@ const modules = {
     caption: "Checklists recentes de veiculos.",
     endpoint: "/checklists",
     fields: [
-      { name: "vehicle_id", label: "Veiculo ID", type: "number", required: true },
+      { name: "vehicle_id", label: "Veiculo ID", type: "number", placeholder: "2026", required: true },
       { name: "incident", label: "Houve sinistro?", type: "checkbox" },
-      { name: "notes", label: "Observacoes", type: "text" }
+      { name: "notes", label: "Observacoes", type: "text", placeholder: "Detalhes do check" }
     ],
-    columns: ["id", "vehicle_id", "incident", "created_at"]
+    columns: ["ID", "Veiculo", "Sinistro", "Criado em"]
   },
   users: {
     title: "Usuarios",
@@ -140,8 +140,8 @@ const modules = {
     caption: "Usuarios cadastrados.",
     endpoint: "/users",
     fields: [
-      { name: "name", label: "Nome", type: "text", required: true },
-      { name: "username", label: "Usuario", type: "text", required: true },
+      { name: "name", label: "Nome", type: "text", placeholder: "Usuario Admin", required: true },
+      { name: "username", label: "Usuario", type: "text", placeholder: "admin", required: true },
       {
         name: "role",
         label: "Perfil",
@@ -153,12 +153,12 @@ const modules = {
         ],
         required: true
       },
-      { name: "email", label: "Email", type: "email" },
-      { name: "phone", label: "Telefone", type: "text" },
+      { name: "email", label: "Email", type: "email", placeholder: "admin@email.com" },
+      { name: "phone", label: "Telefone", type: "text", placeholder: "(11) 90000-0000" },
       { name: "is_active", label: "Ativo", type: "checkbox" },
-      { name: "password", label: "Senha", type: "password", required: true }
+      { name: "password", label: "Senha", type: "password", placeholder: "Senha forte", required: true }
     ],
-    columns: ["id", "name", "username", "role", "is_active", "actions"]
+    columns: ["ID", "Nome", "Usuario", "Perfil", "Ativo", "Acoes"]
   }
 };
 
@@ -233,14 +233,45 @@ async function fetchModuleData(moduleKey) {
   return data;
 }
 
+const COLUMN_MAP = {
+  ID: "id",
+  Nome: "name",
+  CPF: "cpf",
+  Telefone: "phone",
+  Cidade: "city",
+  UF: "state",
+  Cliente: "client_id",
+  Marca: "brand",
+  Modelo: "model",
+  Placa: "plate",
+  Ano: "year",
+  CNPJ: "cnpj",
+  Categoria: "category",
+  Preco: "price",
+  Estoque: "stock_qty",
+  "Preco base": "base_price",
+  Veiculo: "vehicle_id",
+  Status: "status",
+  Total: "total",
+  Tipo: "entry_type",
+  Descricao: "description",
+  Valor: "amount",
+  "Criado em": "created_at",
+  Usuario: "username",
+  Perfil: "role",
+  Ativo: "is_active",
+  Acoes: "actions"
+};
+
 function normalizeValue(item, key) {
-  if (key === "city" || key === "state") {
-    return item.address ? item.address[key] : "";
+  const mappedKey = COLUMN_MAP[key] || key;
+  if (mappedKey === "city" || mappedKey === "state") {
+    return item.address ? item.address[mappedKey] : "";
   }
-  if (key === "actions") {
+  if (mappedKey === "actions") {
     return "";
   }
-  return item[key] ?? "";
+  return item[mappedKey] ?? "";
 }
 
 function renderTable(moduleKey, data) {
@@ -256,7 +287,7 @@ function renderTable(moduleKey, data) {
     .map((item) => {
       const cells = columns
         .map((col) => {
-          if (col === "actions") {
+          if (COLUMN_MAP[col] === "actions") {
             if (!showActions) {
               return `<div class="table__cell"></div>`;
             }
@@ -332,6 +363,9 @@ function buildForm(moduleKey) {
       input.type = field.type;
     }
     input.name = field.name;
+    if (field.placeholder) {
+      input.placeholder = field.placeholder;
+    }
     if (field.required) {
       input.required = true;
     }

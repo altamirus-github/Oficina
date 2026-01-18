@@ -9,6 +9,32 @@ from .auth import seed_users
 
 Base.metadata.create_all(bind=engine)
 
+
+def _ensure_sqlite_sequence() -> None:
+    if not str(engine.url).startswith("sqlite"):
+        return
+    with engine.begin() as conn:
+        for table in [
+            "addresses",
+            "clients",
+            "providers",
+            "vehicles",
+            "services",
+            "products",
+            "orders",
+            "order_items",
+            "financial_entries",
+            "vehicle_checklists",
+            "checklist_photos",
+            "vehicle_photos",
+            "users",
+            "auth_tokens",
+        ]:
+            conn.exec_driver_sql(
+                "INSERT OR IGNORE INTO sqlite_sequence(name, seq) VALUES (?, ?)",
+                (table, 2025),
+            )
+
 app = FastAPI(title="Oficina Mecanica API", version="1.0.0")
 
 app.add_middleware(
@@ -37,6 +63,7 @@ app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
 @app.on_event("startup")
 def ensure_seed_users() -> None:
+    _ensure_sqlite_sequence()
     db = SessionLocal()
     try:
         seed_users(db)
