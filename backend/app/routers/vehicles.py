@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
-from ..auth import get_current_user
+from ..auth import get_current_user, require_roles
 from ..database import get_db
 from ..image_utils import process_image
 
@@ -26,12 +26,12 @@ def get_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
     return vehicle
 
 
-@router.post("/", response_model=schemas.Vehicle, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=schemas.Vehicle, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_roles("admin", "supervisor"))])
 def create_vehicle(payload: schemas.VehicleCreate, db: Session = Depends(get_db)):
     return crud.create_vehicle(db, payload)
 
 
-@router.put("/{vehicle_id}", response_model=schemas.Vehicle)
+@router.put("/{vehicle_id}", response_model=schemas.Vehicle, dependencies=[Depends(require_roles("admin", "supervisor"))])
 def update_vehicle(vehicle_id: int, payload: schemas.VehicleUpdate, db: Session = Depends(get_db)):
     vehicle = db.get(models.Vehicle, vehicle_id)
     if not vehicle:
@@ -39,7 +39,7 @@ def update_vehicle(vehicle_id: int, payload: schemas.VehicleUpdate, db: Session 
     return crud.update_vehicle(db, vehicle, payload)
 
 
-@router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_roles("admin", "supervisor"))])
 def delete_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
     vehicle = db.get(models.Vehicle, vehicle_id)
     if not vehicle:
@@ -48,7 +48,11 @@ def delete_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
     db.commit()
 
 
-@router.get("/{vehicle_id}/photos", response_model=list[schemas.VehiclePhoto])
+@router.get(
+    "/{vehicle_id}/photos",
+    response_model=list[schemas.VehiclePhoto],
+    dependencies=[Depends(require_roles("admin", "supervisor"))],
+)
 def list_photos(vehicle_id: int, db: Session = Depends(get_db)):
     vehicle = db.get(models.Vehicle, vehicle_id)
     if not vehicle:
@@ -56,7 +60,12 @@ def list_photos(vehicle_id: int, db: Session = Depends(get_db)):
     return vehicle.photos
 
 
-@router.post("/{vehicle_id}/photos", response_model=list[schemas.VehiclePhoto], status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{vehicle_id}/photos",
+    response_model=list[schemas.VehiclePhoto],
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_roles("admin", "supervisor"))],
+)
 def upload_photos(
     vehicle_id: int,
     files: list[UploadFile] = File(...),
@@ -93,7 +102,7 @@ def upload_photos(
     return results
 
 
-@router.put("/photos/{photo_id}", response_model=schemas.VehiclePhoto)
+@router.put("/photos/{photo_id}", response_model=schemas.VehiclePhoto, dependencies=[Depends(require_roles("admin", "supervisor"))])
 def update_photo(photo_id: int, payload: schemas.VehiclePhotoUpdate, db: Session = Depends(get_db)):
     photo = db.get(models.VehiclePhoto, photo_id)
     if not photo:
@@ -105,7 +114,7 @@ def update_photo(photo_id: int, payload: schemas.VehiclePhotoUpdate, db: Session
     return photo
 
 
-@router.delete("/photos/{photo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/photos/{photo_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_roles("admin", "supervisor"))])
 def delete_photo(photo_id: int, db: Session = Depends(get_db)):
     photo = db.get(models.VehiclePhoto, photo_id)
     if not photo:

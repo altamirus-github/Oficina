@@ -1,5 +1,6 @@
 const API_BASE = window.API_BASE || window.location.origin;
 const TOKEN_KEY = "oficina_token";
+const ROLE_KEY = "oficina_role";
 
 const modules = {
   clients: {
@@ -132,6 +133,32 @@ const modules = {
       { name: "notes", label: "Observacoes", type: "text" }
     ],
     columns: ["id", "vehicle_id", "incident", "created_at"]
+  },
+  users: {
+    title: "Usuarios",
+    subtitle: "Gerencie acessos e permissões.",
+    caption: "Usuarios cadastrados.",
+    endpoint: "/users",
+    fields: [
+      { name: "name", label: "Nome", type: "text", required: true },
+      { name: "username", label: "Usuario", type: "text", required: true },
+      {
+        name: "role",
+        label: "Perfil",
+        type: "select",
+        options: [
+          { value: "admin", label: "Admin" },
+          { value: "supervisor", label: "Supervisor" },
+          { value: "operator", label: "Operador" }
+        ],
+        required: true
+      },
+      { name: "email", label: "Email", type: "email" },
+      { name: "phone", label: "Telefone", type: "text" },
+      { name: "is_active", label: "Ativo", type: "checkbox" },
+      { name: "password", label: "Senha", type: "password", required: true }
+    ],
+    columns: ["id", "name", "username", "role", "is_active", "actions"]
   }
 };
 
@@ -140,6 +167,7 @@ const state = {
   data: {},
   filtered: [],
   token: localStorage.getItem(TOKEN_KEY) || "",
+  role: localStorage.getItem(ROLE_KEY) || "",
   editing: null,
   activeVehicleId: null
 };
@@ -175,7 +203,14 @@ const elements = {
   vehiclePhotosInput: document.getElementById("vehicle-photos-input"),
   vehiclePhotosCaptions: document.getElementById("vehicle-photos-captions"),
   vehiclePhotosUpload: document.getElementById("vehicle-photos-upload"),
-  vehiclePhotosList: document.getElementById("vehicle-photos-list")
+  vehiclePhotosList: document.getElementById("vehicle-photos-list"),
+  profileButton: document.getElementById("profile"),
+  profileModal: document.getElementById("profile-modal"),
+  profileClose: document.getElementById("profile-close"),
+  profileForm: document.getElementById("profile-form"),
+  profileSave: document.getElementById("profile-save"),
+  profilePhoto: document.getElementById("profile-photo"),
+  profilePhotoUpload: document.getElementById("profile-photo-upload")
 };
 
 function authHeaders() {
@@ -202,12 +237,16 @@ function normalizeValue(item, key) {
   if (key === "city" || key === "state") {
     return item.address ? item.address[key] : "";
   }
+  if (key === "actions") {
+    return "";
+  }
   return item[key] ?? "";
 }
 
 function renderTable(moduleKey, data) {
   const module = modules[moduleKey];
   const columns = module.columns;
+  const showActions = moduleKey === "vehicles" ? state.role !== "operator" : true;
 
   const headerRow = `<div class="table__row header">${columns
     .map((col) => `<div class="table__cell">${col}</div>`)
@@ -218,10 +257,13 @@ function renderTable(moduleKey, data) {
       const cells = columns
         .map((col) => {
           if (col === "actions") {
+            if (!showActions) {
+              return `<div class="table__cell"></div>`;
+            }
             return `<div class="table__cell">
               <div class="table-actions">
                 <button class="ghost action-edit" data-id="${item.id}">Editar</button>
-                <button class="ghost action-photos" data-id="${item.id}">Fotos</button>
+                ${moduleKey === "vehicles" ? `<button class="ghost action-photos" data-id="${item.id}">Fotos</button>` : ""}
                 <button class="ghost danger action-delete" data-id="${item.id}">Excluir</button>
               </div>
             </div>`;
@@ -242,6 +284,13 @@ function setHeader(moduleKey) {
   elements.moduleSubtitle.textContent = module.subtitle;
   elements.tableTitle.textContent = `Lista de ${module.title}`;
   elements.tableCaption.textContent = module.caption;
+}
+
+function applyPermissions() {
+  applyPermissions();
+
+  const createDisabled = state.active === "vehicles" && state.role === "operator";
+  elements.create.style.display = createDisabled ? "none" : "";
 }
 
 function updateStats() {
@@ -431,6 +480,47 @@ async function deleteRecord(moduleKey, id) {
   }
 }
 
+async function fetchProfile() {
+  const response = await fetch(`${API_BASE}/users/me`, {
+    headers: authHeaders()
+  });
+  if (!response.ok) {
+    throw new Error("Falha ao carregar perfil");
+  }
+  return response.json();
+}
+
+async function updateProfile(payload) {
+  const response = await fetch(`${API_BASE}/users/me`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.detail || "Falha ao atualizar perfil");
+  }
+  return response.json();
+}
+
+async function uploadProfilePhoto(file) {
+  if (!file) {
+    return;
+  }
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await fetch(`${API_BASE}/users/me/photo`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: formData
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.detail || "Falha ao enviar foto do perfil");
+  }
+  return response.json();
+}
+
 function fillForm(values) {
   Object.entries(values).forEach(([key, value]) => {
     const input = elements.form.querySelector(`[name="${key}"]`);
@@ -530,7 +620,12 @@ async function login(username, password) {
   const data = await response.json();
   state.token = data.access_token;
   localStorage.setItem(TOKEN_KEY, state.token);
+  localStorage.setItem(ROLE_KEY, data.role || "");
   return data;
+}
+
+function openProfileModal() {
+  elements.profileModal.classList.add("active");
 }
 
 function showLogin() {
@@ -548,6 +643,7 @@ async function loadModule(moduleKey) {
   const data = await fetchModuleData(moduleKey);
   state.filtered = data;
   renderTable(moduleKey, data);
+  applyPermissions();
   updateStats();
 }
 
@@ -557,6 +653,13 @@ function openModal() {
     ? `Editar ${modules[state.active].title}`
     : `Novo ${modules[state.active].title}`;
   buildForm(state.active);
+
+  if (state.active === "users" && state.editing) {
+    const passwordInput = elements.form.querySelector("input[name='password']");
+    if (passwordInput) {
+      passwordInput.parentElement.remove();
+    }
+  }
 }
 
 function closeModal() {
@@ -587,6 +690,12 @@ function bindEvents() {
     });
   });
 
+  elements.navItems.forEach((item) => {
+    if (item.dataset.module === "users" && state.role !== "admin") {
+      item.style.display = "none";
+    }
+  });
+
   elements.refresh.addEventListener("click", () => loadModule(state.active));
   elements.create.addEventListener("click", openModal);
   elements.close.addEventListener("click", closeModal);
@@ -605,7 +714,9 @@ function bindEvents() {
       return;
     }
     if (photosBtn) {
-      await openVehiclePhotos(id);
+      if (state.active === "vehicles") {
+        await openVehiclePhotos(id);
+      }
       return;
     }
     if (deleteBtn) {
@@ -650,6 +761,13 @@ function bindEvents() {
       }
       let record;
       if (state.editing) {
+        if (state.active === "users") {
+          const passwordField = payload.password;
+          delete payload.password;
+          if (passwordField) {
+            payload.new_password = passwordField;
+          }
+        }
         record = await updateRecord(state.active, state.editing, payload);
       } else {
         record = await createRecord(state.active, payload);
@@ -768,11 +886,57 @@ function bindEvents() {
     const username = formData.get("username");
     const password = formData.get("password");
     try {
-      await login(username, password);
+      const data = await login(username, password);
+      state.role = data.role;
+      localStorage.setItem(ROLE_KEY, data.role);
       hideLogin();
       await boot();
     } catch (error) {
       elements.loginError.textContent = error.message;
+    }
+  });
+
+  elements.profileButton.addEventListener("click", async () => {
+    try {
+      const profile = await fetchProfile();
+      const form = elements.profileForm;
+      form.querySelector("[name='name']").value = profile.name || "";
+      form.querySelector("[name='email']").value = profile.email || "";
+      form.querySelector("[name='phone']").value = profile.phone || "";
+      form.querySelector("[name='new_password']").value = "";
+      openProfileModal();
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  elements.profileClose.addEventListener("click", () => {
+    elements.profileModal.classList.remove("active");
+  });
+
+  elements.profileSave.addEventListener("click", async () => {
+    const formData = new FormData(elements.profileForm);
+    const payload = Object.fromEntries(formData.entries());
+    Object.keys(payload).forEach((key) => {
+      if (payload[key] === "") {
+        delete payload[key];
+      }
+    });
+    try {
+      await updateProfile(payload);
+      elements.profileModal.classList.remove("active");
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  elements.profilePhotoUpload.addEventListener("click", async () => {
+    try {
+      const file = elements.profilePhoto.files?.[0];
+      await uploadProfilePhoto(file);
+      alert("Foto atualizada");
+    } catch (error) {
+      alert(error.message);
     }
   });
 }
@@ -782,7 +946,11 @@ async function boot() {
     showLogin();
     return;
   }
+  if (!state.role) {
+    state.role = localStorage.getItem(ROLE_KEY) || "";
+  }
   hideLogin();
+  applyPermissions();
   await Promise.all([
     fetchModuleData("clients"),
     fetchModuleData("vehicles"),

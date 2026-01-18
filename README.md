@@ -38,6 +38,11 @@ Fotos de veiculos:
 - Cada veiculo deve ter entre 4 e 10 fotos com descricao.
 - As imagens sao redimensionadas e compactadas automaticamente.
 
+Perfis de acesso:
+- admin: gerencia usuarios e veiculos
+- supervisor: pode adicionar/editar/excluir veiculos
+- operator: apenas leitura de veiculos
+
 ## Executar API
 ```
 python -m venv backend/.venv

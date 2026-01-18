@@ -40,6 +40,7 @@
         <button class="nav__item" data-module="orders">Ordens</button>
         <button class="nav__item" data-module="finance">Financeiro</button>
         <button class="nav__item" data-module="checklists">Checklists</button>
+        <button class="nav__item" data-module="users">Usuarios</button>
       </nav>
       <div class="sidebar__footer">
         <p>API pronta para integrar com apps e PDV.</p>
@@ -53,6 +54,7 @@
           <p id="module-subtitle">Gestao completa da base de clientes.</p>
         </div>
         <div class="header__actions">
+          <button id="profile" class="ghost">Meu perfil</button>
           <button id="refresh" class="ghost">Atualizar</button>
           <button id="create" class="primary">Novo cadastro</button>
         </div>
@@ -127,6 +129,41 @@
           <h4>Fotos cadastradas</h4>
           <div id="vehicle-photos-list" class="photo-grid"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="profile-modal">
+    <div class="modal__card">
+      <div class="modal__header">
+        <h3>Meu perfil</h3>
+        <button id="profile-close">Fechar</button>
+      </div>
+      <form id="profile-form" class="form">
+        <div>
+          <label>Nome</label>
+          <input name="name" type="text" />
+        </div>
+        <div>
+          <label>Email</label>
+          <input name="email" type="email" />
+        </div>
+        <div>
+          <label>Telefone</label>
+          <input name="phone" type="text" />
+        </div>
+        <div>
+          <label>Nova senha</label>
+          <input name="new_password" type="password" />
+        </div>
+      </form>
+      <div class="photo-upload">
+        <h4>Foto do perfil</h4>
+        <input id="profile-photo" type="file" accept="image/*" />
+        <button id="profile-photo-upload" class="primary">Enviar foto</button>
+      </div>
+      <div class="modal__footer">
+        <button id="profile-save" class="primary" type="button">Salvar</button>
       </div>
     </div>
   </div>

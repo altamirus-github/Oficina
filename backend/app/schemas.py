@@ -139,6 +139,45 @@ class VehicleWithPhotos(Vehicle):
     photos: list[VehiclePhoto] = []
 
 
+class UserBase(BaseModel):
+    name: str
+    username: str
+    role: str
+    email: str | None = None
+    phone: str | None = None
+    is_active: bool = True
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class UserUpdate(BaseModel):
+    name: str | None = None
+    role: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    is_active: bool | None = None
+    new_password: str | None = None
+
+
+class User(UserBase):
+    id: int
+    photo_path: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ProfileUpdate(BaseModel):
+    name: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    new_password: str | None = None
+
+
 class ServiceBase(BaseModel):
     name: str
     description: str | None = None

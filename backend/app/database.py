@@ -9,7 +9,7 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./oficina.db")
 if DATABASE_URL.startswith("sqlite"):
     parsed = urlparse(DATABASE_URL)
     db_path = parsed.path
-    if db_path:
+    if db_path and os.path.dirname(db_path):
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
 connect_args = {}
