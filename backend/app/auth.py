@@ -78,6 +78,18 @@ def seed_users(db: Session) -> None:
     for data in defaults:
         existing = db.query(models.User).filter_by(username=data["username"]).first()
         if existing:
+            updated = False
+            if existing.role != data["role"]:
+                existing.role = data["role"]
+                updated = True
+            if not verify_password(data["password"], existing.password_hash):
+                existing.password_hash = hash_password(data["password"])
+                updated = True
+            if not existing.is_active:
+                existing.is_active = True
+                updated = True
+            if updated:
+                db.add(existing)
             continue
         user = models.User(
             name=data["name"],
