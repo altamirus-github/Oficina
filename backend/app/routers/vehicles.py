@@ -67,10 +67,11 @@ def upload_photos(
     if not vehicle:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle not found")
 
-    if len(files) < 4 or len(files) > 10:
+    total_after = len(vehicle.photos) + len(files)
+    if total_after < 4 or total_after > 10:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Envie entre 4 e 10 fotos do veiculo",
+            detail="Envie entre 4 e 10 fotos no total do veiculo",
         )
 
     os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -92,10 +93,28 @@ def upload_photos(
     return results
 
 
+@router.put("/photos/{photo_id}", response_model=schemas.VehiclePhoto)
+def update_photo(photo_id: int, payload: schemas.VehiclePhotoUpdate, db: Session = Depends(get_db)):
+    photo = db.get(models.VehiclePhoto, photo_id)
+    if not photo:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found")
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(photo, field, value)
+    db.commit()
+    db.refresh(photo)
+    return photo
+
+
 @router.delete("/photos/{photo_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_photo(photo_id: int, db: Session = Depends(get_db)):
     photo = db.get(models.VehiclePhoto, photo_id)
     if not photo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found")
+    vehicle = db.get(models.Vehicle, photo.vehicle_id)
+    if vehicle and len(vehicle.photos) <= 4:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="O veiculo precisa manter ao menos 4 fotos",
+        )
     db.delete(photo)
     db.commit()

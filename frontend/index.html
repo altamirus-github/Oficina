@@ -110,6 +110,27 @@
     </div>
   </div>
 
+  <div class="modal" id="photo-modal">
+    <div class="modal__card">
+      <div class="modal__header">
+        <h3 id="photo-modal-title">Fotos do veiculo</h3>
+        <button id="photo-close">Fechar</button>
+      </div>
+      <div class="photo-manager">
+        <div class="photo-upload">
+          <h4>Adicionar fotos</h4>
+          <input id="vehicle-photos-input" type="file" accept="image/*" multiple />
+          <div id="vehicle-photos-captions" class="photo-captions"></div>
+          <button id="vehicle-photos-upload" class="primary">Enviar fotos</button>
+        </div>
+        <div class="photo-list">
+          <h4>Fotos cadastradas</h4>
+          <div id="vehicle-photos-list" class="photo-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>

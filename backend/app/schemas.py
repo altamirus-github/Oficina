@@ -131,6 +131,10 @@ class VehiclePhoto(VehiclePhotoBase):
         from_attributes = True
 
 
+class VehiclePhotoUpdate(BaseModel):
+    caption: str | None = None
+
+
 class VehicleWithPhotos(Vehicle):
     photos: list[VehiclePhoto] = []
 

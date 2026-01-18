@@ -333,6 +333,12 @@ body {
   transform: translateY(-1px);
 }
 
+.table-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .table__cell {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -417,6 +423,62 @@ body {
 .photo-caption {
   display: grid;
   gap: 6px;
+}
+
+.photo-manager {
+  display: grid;
+  gap: 20px;
+}
+
+.photo-upload,
+.photo-list {
+  background: var(--bg-soft);
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+
+.photo-upload h4,
+.photo-list h4 {
+  margin: 0 0 12px;
+}
+
+.photo-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.photo-item {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 12px;
+  align-items: center;
+  background: rgba(10, 12, 18, 0.6);
+  border-radius: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+}
+
+.photo-item img {
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.photo-item input {
+  width: 100%;
+}
+
+.photo-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.danger {
+  background: #ff6b6b;
+  color: #160b0b;
 }
 
 .modal__footer {

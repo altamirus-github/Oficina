@@ -35,7 +35,7 @@ const modules = {
       { name: "color", label: "Cor", type: "text" },
       { name: "fuel_type", label: "Combustivel", type: "text" }
     ],
-    columns: ["id", "client_id", "brand", "model", "plate", "year"]
+    columns: ["id", "client_id", "brand", "model", "plate", "year", "actions"]
   },
   providers: {
     title: "Fornecedores",
@@ -139,7 +139,9 @@ const state = {
   active: "clients",
   data: {},
   filtered: [],
-  token: localStorage.getItem(TOKEN_KEY) || ""
+  token: localStorage.getItem(TOKEN_KEY) || "",
+  editing: null,
+  activeVehicleId: null
 };
 
 const elements = {
@@ -166,7 +168,14 @@ const elements = {
   },
   login: document.getElementById("login"),
   loginForm: document.getElementById("login-form"),
-  loginError: document.getElementById("login-error")
+  loginError: document.getElementById("login-error"),
+  photoModal: document.getElementById("photo-modal"),
+  photoModalTitle: document.getElementById("photo-modal-title"),
+  photoModalClose: document.getElementById("photo-close"),
+  vehiclePhotosInput: document.getElementById("vehicle-photos-input"),
+  vehiclePhotosCaptions: document.getElementById("vehicle-photos-captions"),
+  vehiclePhotosUpload: document.getElementById("vehicle-photos-upload"),
+  vehiclePhotosList: document.getElementById("vehicle-photos-list")
 };
 
 function authHeaders() {
@@ -207,7 +216,18 @@ function renderTable(moduleKey, data) {
   const rows = data
     .map((item) => {
       const cells = columns
-        .map((col) => `<div class="table__cell">${normalizeValue(item, col)}</div>`)
+        .map((col) => {
+          if (col === "actions") {
+            return `<div class="table__cell">
+              <div class="table-actions">
+                <button class="ghost action-edit" data-id="${item.id}">Editar</button>
+                <button class="ghost action-photos" data-id="${item.id}">Fotos</button>
+                <button class="ghost danger action-delete" data-id="${item.id}">Excluir</button>
+              </div>
+            </div>`;
+          }
+          return `<div class="table__cell">${normalizeValue(item, col)}</div>`;
+        })
         .join("");
       return `<div class="table__row data">${cells}</div>`;
     })
@@ -387,6 +407,116 @@ async function uploadVehiclePhotos(vehicleId, files, captions) {
   }
 }
 
+async function updateRecord(moduleKey, id, payload) {
+  const response = await fetch(`${API_BASE}${modules[moduleKey].endpoint}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Falha ao atualizar registro");
+  }
+  return response.json();
+}
+
+async function deleteRecord(moduleKey, id) {
+  const response = await fetch(`${API_BASE}${modules[moduleKey].endpoint}/${id}`, {
+    method: "DELETE",
+    headers: authHeaders()
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.detail || "Falha ao excluir registro");
+  }
+}
+
+function fillForm(values) {
+  Object.entries(values).forEach(([key, value]) => {
+    const input = elements.form.querySelector(`[name="${key}"]`);
+    if (!input) {
+      return;
+    }
+    if (input.type === "checkbox") {
+      input.checked = Boolean(value);
+    } else {
+      input.value = value ?? "";
+    }
+  });
+}
+
+async function fetchVehiclePhotos(vehicleId) {
+  const response = await fetch(`${API_BASE}/vehicles/${vehicleId}/photos`, {
+    headers: authHeaders()
+  });
+  if (!response.ok) {
+    throw new Error("Falha ao carregar fotos do veiculo");
+  }
+  return response.json();
+}
+
+async function updateVehiclePhoto(photoId, caption) {
+  const response = await fetch(`${API_BASE}/vehicles/photos/${photoId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({ caption })
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.detail || "Falha ao atualizar foto");
+  }
+}
+
+async function deleteVehiclePhoto(photoId) {
+  const response = await fetch(`${API_BASE}/vehicles/photos/${photoId}`, {
+    method: "DELETE",
+    headers: authHeaders()
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.detail || "Falha ao excluir foto");
+  }
+}
+
+async function openVehiclePhotos(vehicleId) {
+  state.activeVehicleId = vehicleId;
+  elements.photoModal.classList.add("active");
+  elements.photoModalTitle.textContent = `Fotos do veiculo #${vehicleId}`;
+  await refreshVehiclePhotos();
+}
+
+function closeVehiclePhotos() {
+  elements.photoModal.classList.remove("active");
+  elements.vehiclePhotosInput.value = "";
+  elements.vehiclePhotosCaptions.innerHTML = "";
+  elements.vehiclePhotosList.innerHTML = "";
+  state.activeVehicleId = null;
+}
+
+async function refreshVehiclePhotos() {
+  if (!state.activeVehicleId) {
+    return;
+  }
+  const photos = await fetchVehiclePhotos(state.activeVehicleId);
+  elements.vehiclePhotosList.innerHTML = photos
+    .map(
+      (photo) => `
+        <div class="photo-item" data-photo-id="${photo.id}">
+          <img src="${API_BASE}${photo.file_path}" alt="foto do veiculo" />
+          <div>
+            <label>Descricao</label>
+            <input type="text" value="${photo.caption || ""}" />
+            <div class="photo-actions">
+              <button class="ghost action-photo-save">Atualizar</button>
+              <button class="ghost danger action-photo-delete">Excluir</button>
+            </div>
+          </div>
+        </div>
+      `
+    )
+    .join("");
+}
+
 async function login(username, password) {
   const response = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
@@ -423,13 +553,16 @@ async function loadModule(moduleKey) {
 
 function openModal() {
   elements.modal.classList.add("active");
-  elements.modalTitle.textContent = `Novo ${modules[state.active].title}`;
+  elements.modalTitle.textContent = state.editing
+    ? `Editar ${modules[state.active].title}`
+    : `Novo ${modules[state.active].title}`;
   buildForm(state.active);
 }
 
 function closeModal() {
   elements.modal.classList.remove("active");
   elements.form.reset();
+  state.editing = null;
 }
 
 function filterTable(query) {
@@ -460,6 +593,46 @@ function bindEvents() {
   elements.cancel.addEventListener("click", closeModal);
   elements.search.addEventListener("input", (event) => filterTable(event.target.value));
 
+  elements.table.addEventListener("click", async (event) => {
+    const editBtn = event.target.closest(".action-edit");
+    const deleteBtn = event.target.closest(".action-delete");
+    const photosBtn = event.target.closest(".action-photos");
+    if (!editBtn && !deleteBtn && !photosBtn) {
+      return;
+    }
+    const id = Number((editBtn || deleteBtn || photosBtn).dataset.id);
+    if (!id) {
+      return;
+    }
+    if (photosBtn) {
+      await openVehiclePhotos(id);
+      return;
+    }
+    if (deleteBtn) {
+      if (!confirm("Deseja excluir este registro?")) {
+        return;
+      }
+      try {
+        await deleteRecord(state.active, id);
+        await loadModule(state.active);
+      } catch (error) {
+        alert(error.message);
+      }
+      return;
+    }
+    if (editBtn) {
+      const current = (state.data[state.active] || []).find((item) => item.id === id);
+      if (!current) {
+        return;
+      }
+      state.editing = id;
+      openModal();
+      const editable = { ...current };
+      delete editable.id;
+      fillForm(editable);
+    }
+  });
+
   elements.form.addEventListener("submit", async (event) => {
     event.preventDefault();
     try {
@@ -467,7 +640,7 @@ function bindEvents() {
       if (state.active === "orders") {
         payload.items = [];
       }
-      if (state.active === "vehicles") {
+      if (state.active === "vehicles" && !state.editing) {
         const photosInput = elements.form.querySelector("input[name='vehicle_photos']");
         const count = photosInput?.files?.length || 0;
         if (count < 4 || count > 10) {
@@ -475,17 +648,22 @@ function bindEvents() {
           return;
         }
       }
-      const created = await createRecord(state.active, payload);
-      if (state.active === "checklists") {
-        const photosInput = elements.form.querySelector("input[name='photos']");
-        await uploadChecklistPhotos(created.id, photosInput?.files);
+      let record;
+      if (state.editing) {
+        record = await updateRecord(state.active, state.editing, payload);
+      } else {
+        record = await createRecord(state.active, payload);
       }
-      if (state.active === "vehicles") {
+      if (!state.editing && state.active === "checklists") {
+        const photosInput = elements.form.querySelector("input[name='photos']");
+        await uploadChecklistPhotos(record.id, photosInput?.files);
+      }
+      if (!state.editing && state.active === "vehicles") {
         const photosInput = elements.form.querySelector("input[name='vehicle_photos']");
         const captions = Array.from(elements.form.querySelectorAll("[data-caption-index]")).map(
           (input) => input.value
         );
-        await uploadVehiclePhotos(created.id, photosInput?.files, captions);
+        await uploadVehiclePhotos(record.id, photosInput?.files, captions);
       }
       closeModal();
       await loadModule(state.active);
@@ -516,6 +694,71 @@ function bindEvents() {
       group.appendChild(input);
       container.appendChild(group);
     });
+  });
+
+  elements.photoModalClose.addEventListener("click", closeVehiclePhotos);
+
+  elements.vehiclePhotosInput.addEventListener("change", (event) => {
+    const files = Array.from(event.target.files || []).slice(0, 10);
+    elements.vehiclePhotosCaptions.innerHTML = "";
+    files.forEach((file, index) => {
+      const group = document.createElement("div");
+      group.classList.add("photo-caption");
+      const label = document.createElement("label");
+      label.textContent = `Descricao da foto ${index + 1} (${file.name})`;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.dataset.captionIndex = String(index);
+      group.appendChild(label);
+      group.appendChild(input);
+      elements.vehiclePhotosCaptions.appendChild(group);
+    });
+  });
+
+  elements.vehiclePhotosUpload.addEventListener("click", async () => {
+    if (!state.activeVehicleId) {
+      return;
+    }
+    const files = elements.vehiclePhotosInput.files;
+    const captions = Array.from(elements.vehiclePhotosCaptions.querySelectorAll("[data-caption-index]")).map(
+      (input) => input.value
+    );
+    try {
+      await uploadVehiclePhotos(state.activeVehicleId, files, captions);
+      elements.vehiclePhotosInput.value = "";
+      elements.vehiclePhotosCaptions.innerHTML = "";
+      await refreshVehiclePhotos();
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  elements.vehiclePhotosList.addEventListener("click", async (event) => {
+    const saveBtn = event.target.closest(".action-photo-save");
+    const deleteBtn = event.target.closest(".action-photo-delete");
+    if (!saveBtn && !deleteBtn) {
+      return;
+    }
+    const item = event.target.closest(".photo-item");
+    const photoId = Number(item?.dataset.photoId);
+    if (!photoId) {
+      return;
+    }
+    try {
+      if (saveBtn) {
+        const caption = item.querySelector("input")?.value || "";
+        await updateVehiclePhoto(photoId, caption);
+      }
+      if (deleteBtn) {
+        if (!confirm("Deseja excluir esta foto?")) {
+          return;
+        }
+        await deleteVehiclePhoto(photoId);
+      }
+      await refreshVehiclePhotos();
+    } catch (error) {
+      alert(error.message);
+    }
   });
 
   elements.loginForm.addEventListener("submit", async (event) => {
