@@ -135,8 +135,8 @@ const modules = {
     ],
     columns: ["ID", "Veiculo", "Sinistro", "Criado em"]
   },
-  users: {
-    title: "Usuarios",
+  admin: {
+    title: "Administracao",
     subtitle: "Gerencie acessos e permissões.",
     caption: "Usuarios cadastrados.",
     endpoint: "/users",
@@ -199,6 +199,8 @@ const elements = {
   login: document.getElementById("login"),
   loginForm: document.getElementById("login-form"),
   loginError: document.getElementById("login-error"),
+  loginCancel: document.getElementById("login-cancel"),
+  loginRecover: document.getElementById("login-recover"),
   photoModal: document.getElementById("photo-modal"),
   photoModalTitle: document.getElementById("photo-modal-title"),
   photoModalClose: document.getElementById("photo-close"),
@@ -220,7 +222,18 @@ const elements = {
   logoutButton: document.getElementById("logout-button"),
   userMenu: document.getElementById("user-menu"),
   userMenuTrigger: document.getElementById("user-menu-trigger"),
-  userMenuDropdown: document.getElementById("user-menu-dropdown")
+  userMenuDropdown: document.getElementById("user-menu-dropdown"),
+  profilePageButton: document.getElementById("profile-page"),
+  profilePageSection: document.getElementById("profile-page-section"),
+  profileName: document.getElementById("profile-name"),
+  profileUsername: document.getElementById("profile-username"),
+  profileEmail: document.getElementById("profile-email"),
+  profilePhone: document.getElementById("profile-phone"),
+  profileRole: document.getElementById("profile-role"),
+  profilePageForm: document.getElementById("profile-page-form"),
+  profilePageSave: document.getElementById("profile-page-save"),
+  profilePagePhoto: document.getElementById("profile-page-photo"),
+  tablePanel: document.getElementById("table-panel")
 };
 
 function authHeaders() {
@@ -356,8 +369,29 @@ function setHeader(moduleKey) {
   elements.tableCaption.textContent = module.caption;
 }
 
+function showProfilePage(profile) {
+  elements.profilePageSection.classList.add("active");
+  elements.profileName.textContent = profile.name || "-";
+  elements.profileUsername.textContent = profile.username || "-";
+  elements.profileEmail.textContent = profile.email || "-";
+  elements.profilePhone.textContent = profile.phone || "-";
+  elements.profileRole.textContent = profile.role || "-";
+  elements.profilePageForm.querySelector("[name='name']").value = profile.name || "";
+  elements.profilePageForm.querySelector("[name='email']").value = profile.email || "";
+  elements.profilePageForm.querySelector("[name='phone']").value = profile.phone || "";
+  elements.profilePageForm.querySelector("[name='new_password']").value = "";
+}
+
+function hideProfilePage() {
+  elements.profilePageSection.classList.remove("active");
+}
+
 function applyPermissions() {
-  applyPermissions();
+  elements.navItems.forEach((item) => {
+    if (item.dataset.module === "admin" && state.role !== "admin") {
+      item.style.display = "none";
+    }
+  });
 
   const createDisabled = state.active === "vehicles" && state.role === "operator";
   elements.create.style.display = createDisabled ? "none" : "";
@@ -568,7 +602,13 @@ async function fetchProfile() {
   if (!response.ok) {
     throw new Error("Falha ao carregar perfil");
   }
-  return response.json();
+  const data = await response.json();
+  state.name = data.name || data.username || "";
+  state.role = data.role || state.role;
+  localStorage.setItem(NAME_KEY, state.name);
+  localStorage.setItem(ROLE_KEY, state.role);
+  setSessionUI();
+  return data;
 }
 
 async function updateProfile(payload) {
@@ -722,6 +762,20 @@ function hideLogin() {
 async function loadModule(moduleKey) {
   state.active = moduleKey;
   elements.search.value = "";
+  if (moduleKey === "profile") {
+    elements.moduleTitle.textContent = "Perfil";
+    elements.moduleSubtitle.textContent = "Dados da sessao e configuracoes do usuario.";
+    elements.tableTitle.textContent = "";
+    elements.tableCaption.textContent = "";
+    const profile = await fetchProfile();
+    showProfilePage(profile);
+    elements.table.innerHTML = "";
+    elements.search.value = "";
+    elements.tablePanel.style.display = "none";
+    return;
+  }
+  elements.tablePanel.style.display = "";
+  hideProfilePage();
   setHeader(moduleKey);
   const data = await fetchModuleData(moduleKey);
   state.filtered = data;
@@ -843,8 +897,8 @@ function bindEvents() {
         }
       }
       let record;
-      if (state.editing) {
-        if (state.active === "users") {
+  if (state.editing) {
+        if (state.active === "admin") {
           const passwordField = payload.password;
           delete payload.password;
           if (passwordField) {
@@ -982,6 +1036,14 @@ function bindEvents() {
     }
   });
 
+  elements.loginCancel.addEventListener("click", () => {
+    elements.login.classList.add("hidden");
+  });
+
+  elements.loginRecover.addEventListener("click", () => {
+    alert("Recuperacao de senha: contate o administrador para redefinir sua senha.");
+  });
+
   elements.loginButton.addEventListener("click", showLogin);
 
   elements.logoutButton.addEventListener("click", async () => {
@@ -1021,6 +1083,15 @@ function bindEvents() {
     }
   });
 
+  elements.profilePageButton.addEventListener("click", async () => {
+    try {
+      await loadModule("profile");
+      elements.userMenuDropdown.classList.remove("active");
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
   elements.profileClose.addEventListener("click", () => {
     elements.profileModal.classList.remove("active");
   });
@@ -1041,10 +1112,31 @@ function bindEvents() {
     }
   });
 
+  elements.profilePageSave.addEventListener("click", async () => {
+    const formData = new FormData(elements.profilePageForm);
+    const payload = Object.fromEntries(formData.entries());
+    Object.keys(payload).forEach((key) => {
+      if (payload[key] === "") {
+        delete payload[key];
+      }
+    });
+    try {
+      const profile = await updateProfile(payload);
+      showProfilePage(profile);
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  elements.profilePagePhoto.addEventListener("click", () => {
+    elements.profileModal.classList.add("active");
+  });
+
   elements.profilePhotoUpload.addEventListener("click", async () => {
     try {
       const file = elements.profilePhoto.files?.[0];
-      await uploadProfilePhoto(file);
+      const profile = await uploadProfilePhoto(file);
+      showProfilePage(profile);
       alert("Foto atualizada");
     } catch (error) {
       alert(error.message);

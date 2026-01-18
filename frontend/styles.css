@@ -76,6 +76,12 @@ body {
   gap: 10px;
 }
 
+.login__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
 .login__card label {
   font-size: 12px;
   color: var(--muted);
@@ -277,6 +283,46 @@ body {
   padding: 20px;
   animation: fadeUp 0.6s ease both;
   animation-delay: 0.2s;
+}
+
+.profile-page {
+  display: none;
+}
+
+.profile-page.active {
+  display: block;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.profile-card {
+  background: var(--bg-soft);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.profile-info {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.profile-info strong {
+  color: var(--text);
+}
+
+.profile-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .panel__header {
