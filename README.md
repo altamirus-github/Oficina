@@ -6,6 +6,28 @@ Projeto refeito em Python (FastAPI) com UI dark moderna.
 - `backend/` API FastAPI + SQLAlchemy
 - `frontend/` UI estatica consumindo a API
 
+## Deploy em /opt/oficina (Docker Swarm + Portainer)
+1) No servidor, clone em `/opt/oficina`:
+```
+git clone git@github.com:altamirus-github/Oficina.git /opt/oficina
+cd /opt/oficina
+```
+
+2) Build da imagem no manager do Swarm:
+```
+docker build -t oficina:latest .
+```
+
+3) Deploy da stack:
+```
+docker stack deploy -c docker-stack.yml oficina
+```
+
+4) Acesso:
+- `http://<IP_DO_SERVIDOR>:8000/frontend/index.html`
+
+Observacao: em Swarm, o `build` do compose nao e aplicado. Se usar Portainer, suba a stack apontando para a imagem `oficina:latest` ou publique a imagem em um registry.
+
 ## Executar API
 ```
 python -m venv backend/.venv

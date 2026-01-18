@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  oficina:
+    image: oficina:latest
+    ports:
+      - "8000:8000"
+    environment:
+      ADMIN_USER: admin
+      ADMIN_PASSWORD: defina_uma_senha
+      ADMIN_TOKEN: static-admin-token
+      DATABASE_URL: sqlite:///./oficina.db
+    volumes:
+      - oficina_db:/app/backend/oficina.db
+      - oficina_uploads:/app/backend/app/uploads
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  oficina_db:
+  oficina_uploads:
