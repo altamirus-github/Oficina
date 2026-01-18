@@ -41,6 +41,16 @@ def create_token(db: Session, user: models.User) -> UserToken:
     return UserToken(token=token_value, role=user.role)
 
 
+def revoke_token(db: Session, token_value: str, user_id: int | None = None) -> None:
+    query = db.query(models.AuthToken).filter_by(token=token_value)
+    if user_id is not None:
+        query = query.filter_by(user_id=user_id)
+    token = query.first()
+    if token:
+        db.delete(token)
+        db.commit()
+
+
 def seed_users(db: Session) -> None:
     if db.query(models.User).count() > 0:
         return

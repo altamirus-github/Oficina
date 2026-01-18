@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from .. import models
-from ..auth import create_token, verify_password
+from ..auth import create_token, get_current_user, revoke_token, verify_password
 from ..database import get_db
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+security = HTTPBearer()
 
 
 @router.post("/login")
@@ -20,4 +22,20 @@ def login(payload: dict, db: Session = Depends(get_db)):
     if not verify_password(password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciais invalidas")
     token = create_token(db, user)
-    return {"access_token": token.token, "token_type": "bearer", "role": token.role}
+    return {
+        "access_token": token.token,
+        "token_type": "bearer",
+        "role": token.role,
+        "username": user.username,
+        "name": user.name,
+    }
+
+
+@router.post("/logout")
+def logout(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    revoke_token(db, credentials.credentials, user.id)
+    return {"status": "ok"}

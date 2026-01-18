@@ -1,6 +1,7 @@
 const API_BASE = window.API_BASE || window.location.origin;
 const TOKEN_KEY = "oficina_token";
 const ROLE_KEY = "oficina_role";
+const NAME_KEY = "oficina_name";
 
 const modules = {
   clients: {
@@ -168,6 +169,7 @@ const state = {
   filtered: [],
   token: localStorage.getItem(TOKEN_KEY) || "",
   role: localStorage.getItem(ROLE_KEY) || "",
+  name: localStorage.getItem(NAME_KEY) || "",
   editing: null,
   activeVehicleId: null
 };
@@ -210,7 +212,12 @@ const elements = {
   profileForm: document.getElementById("profile-form"),
   profileSave: document.getElementById("profile-save"),
   profilePhoto: document.getElementById("profile-photo"),
-  profilePhotoUpload: document.getElementById("profile-photo-upload")
+  profilePhotoUpload: document.getElementById("profile-photo-upload"),
+  sessionInfo: document.getElementById("session-info"),
+  sessionName: document.getElementById("session-name"),
+  sessionRole: document.getElementById("session-role"),
+  loginButton: document.getElementById("login-button"),
+  logoutButton: document.getElementById("logout-button")
 };
 
 function authHeaders() {
@@ -220,11 +227,38 @@ function authHeaders() {
   return { Authorization: `Bearer ${state.token}` };
 }
 
+function setSessionUI() {
+  const loggedIn = Boolean(state.token);
+  elements.sessionName.textContent = loggedIn ? state.name || "Usuario" : "Visitante";
+  elements.sessionRole.textContent = loggedIn ? state.role || "usuario" : "offline";
+  elements.logoutButton.style.display = loggedIn ? "" : "none";
+  elements.profileButton.style.display = loggedIn ? "" : "none";
+  elements.loginButton.style.display = loggedIn ? "none" : "";
+}
+
+function forceLogout(message) {
+  if (message) {
+    alert(message);
+  }
+  state.token = "";
+  state.role = "";
+  state.name = "";
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(ROLE_KEY);
+  localStorage.removeItem(NAME_KEY);
+  showLogin();
+  setSessionUI();
+}
+
 async function fetchModuleData(moduleKey) {
   const module = modules[moduleKey];
   const response = await fetch(`${API_BASE}${module.endpoint}`, {
     headers: authHeaders()
   });
+  if (response.status === 401) {
+    forceLogout("Sessao expirada. Faca login novamente.");
+    throw new Error("Sessao expirada");
+  }
   if (!response.ok) {
     throw new Error("Falha ao carregar dados");
   }
@@ -445,6 +479,10 @@ async function createRecord(moduleKey, payload) {
     body: JSON.stringify(payload)
   });
 
+  if (response.status === 401) {
+    forceLogout("Sessao expirada. Faca login novamente.");
+    throw new Error("Sessao expirada");
+  }
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || "Falha ao salvar registro");
@@ -518,6 +556,10 @@ async function fetchProfile() {
   const response = await fetch(`${API_BASE}/users/me`, {
     headers: authHeaders()
   });
+  if (response.status === 401) {
+    forceLogout("Sessao expirada. Faca login novamente.");
+    throw new Error("Sessao expirada");
+  }
   if (!response.ok) {
     throw new Error("Falha ao carregar perfil");
   }
@@ -655,6 +697,8 @@ async function login(username, password) {
   state.token = data.access_token;
   localStorage.setItem(TOKEN_KEY, state.token);
   localStorage.setItem(ROLE_KEY, data.role || "");
+  localStorage.setItem(NAME_KEY, data.name || data.username || "");
+  state.name = data.name || data.username || "";
   return data;
 }
 
@@ -922,11 +966,29 @@ function bindEvents() {
     try {
       const data = await login(username, password);
       state.role = data.role;
+      state.name = data.name || data.username || "";
       localStorage.setItem(ROLE_KEY, data.role);
+      localStorage.setItem(NAME_KEY, state.name);
       hideLogin();
+      setSessionUI();
       await boot();
     } catch (error) {
       elements.loginError.textContent = error.message;
+    }
+  });
+
+  elements.loginButton.addEventListener("click", showLogin);
+
+  elements.logoutButton.addEventListener("click", async () => {
+    try {
+      await fetch(`${API_BASE}/auth/logout`, {
+        method: "POST",
+        headers: authHeaders()
+      });
+    } catch (error) {
+      // ignore
+    } finally {
+      forceLogout();
     }
   });
 
@@ -978,13 +1040,18 @@ function bindEvents() {
 async function boot() {
   if (!state.token) {
     showLogin();
+    setSessionUI();
     return;
   }
   if (!state.role) {
     state.role = localStorage.getItem(ROLE_KEY) || "";
   }
+  if (!state.name) {
+    state.name = localStorage.getItem(NAME_KEY) || "";
+  }
   hideLogin();
   applyPermissions();
+  setSessionUI();
   await Promise.all([
     fetchModuleData("clients"),
     fetchModuleData("vehicles"),
