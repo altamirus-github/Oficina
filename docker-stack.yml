@@ -25,7 +25,7 @@ services:
         - "traefik.http.routers.oficina.tls=true"
         - "traefik.http.services.oficina.loadbalancer.server.port=8000"
     networks:
-      - traefik
+      - mkx
       - default
 
 volumes:
@@ -33,5 +33,5 @@ volumes:
   oficina_uploads:
 
 networks:
-  traefik:
+  mkx:
     external: true
