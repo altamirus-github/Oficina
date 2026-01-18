@@ -284,6 +284,24 @@ function buildForm(moduleKey) {
     wrapper.appendChild(input);
     elements.form.appendChild(wrapper);
   }
+
+  if (moduleKey === "vehicles") {
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("form__full");
+    const label = document.createElement("label");
+    label.textContent = "Fotos do veiculo (min 4, max 10)";
+    const input = document.createElement("input");
+    input.type = "file";
+    input.name = "vehicle_photos";
+    input.accept = "image/*";
+    input.multiple = true;
+    wrapper.appendChild(label);
+    wrapper.appendChild(input);
+    const captions = document.createElement("div");
+    captions.classList.add("photo-captions");
+    wrapper.appendChild(captions);
+    elements.form.appendChild(wrapper);
+  }
 }
 
 function parseFormData(form) {
@@ -299,7 +317,7 @@ function parseFormData(form) {
         address[field] = value;
         hasAddress = true;
       }
-    } else if (key !== "photos" && value !== "") {
+    } else if (key !== "photos" && key !== "vehicle_photos" && value !== "") {
       data[key] = value;
     }
   });
@@ -347,6 +365,25 @@ async function uploadChecklistPhotos(checklistId, files) {
     if (!response.ok) {
       throw new Error("Falha ao enviar foto");
     }
+  }
+}
+
+async function uploadVehiclePhotos(vehicleId, files, captions) {
+  const uploads = Array.from(files || []);
+  if (!uploads.length) {
+    return;
+  }
+  const formData = new FormData();
+  uploads.forEach((file) => formData.append("files", file));
+  captions.forEach((caption) => formData.append("captions", caption));
+  const response = await fetch(`${API_BASE}/vehicles/${vehicleId}/photos`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: formData
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.detail || "Falha ao enviar fotos do veiculo");
   }
 }
 
@@ -430,16 +467,55 @@ function bindEvents() {
       if (state.active === "orders") {
         payload.items = [];
       }
+      if (state.active === "vehicles") {
+        const photosInput = elements.form.querySelector("input[name='vehicle_photos']");
+        const count = photosInput?.files?.length || 0;
+        if (count < 4 || count > 10) {
+          alert("Envie entre 4 e 10 fotos do veiculo.");
+          return;
+        }
+      }
       const created = await createRecord(state.active, payload);
       if (state.active === "checklists") {
         const photosInput = elements.form.querySelector("input[name='photos']");
         await uploadChecklistPhotos(created.id, photosInput?.files);
+      }
+      if (state.active === "vehicles") {
+        const photosInput = elements.form.querySelector("input[name='vehicle_photos']");
+        const captions = Array.from(elements.form.querySelectorAll("[data-caption-index]")).map(
+          (input) => input.value
+        );
+        await uploadVehiclePhotos(created.id, photosInput?.files, captions);
       }
       closeModal();
       await loadModule(state.active);
     } catch (error) {
       alert(error.message);
     }
+  });
+
+  elements.form.addEventListener("change", (event) => {
+    if (event.target?.name !== "vehicle_photos") {
+      return;
+    }
+    const container = elements.form.querySelector(".photo-captions");
+    if (!container) {
+      return;
+    }
+    container.innerHTML = "";
+    const files = Array.from(event.target.files || []).slice(0, 10);
+    files.forEach((file, index) => {
+      const group = document.createElement("div");
+      group.classList.add("photo-caption");
+      const label = document.createElement("label");
+      label.textContent = `Descricao da foto ${index + 1} (${file.name})`;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.dataset.captionIndex = String(index);
+      group.appendChild(label);
+      group.appendChild(input);
+      container.appendChild(group);
+    });
   });
 
   elements.loginForm.addEventListener("submit", async (event) => {

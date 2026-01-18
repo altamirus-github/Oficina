@@ -34,6 +34,10 @@ Nota final:
 - Usuario demo: `demo`
 - Senha demo: `demo123`
 
+Fotos de veiculos:
+- Cada veiculo deve ter entre 4 e 10 fotos com descricao.
+- As imagens sao redimensionadas e compactadas automaticamente.
+
 ## Executar API
 ```
 python -m venv backend/.venv

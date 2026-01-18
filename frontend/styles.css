@@ -408,6 +408,17 @@ body {
   grid-column: 1 / -1;
 }
 
+.photo-captions {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.photo-caption {
+  display: grid;
+  gap: 6px;
+}
+
 .modal__footer {
   display: flex;
   justify-content: flex-end;

@@ -67,6 +67,7 @@ class Vehicle(Base):
 
     client: Mapped[Client] = relationship(back_populates="vehicles")
     orders: Mapped[list["Order"]] = relationship(back_populates="vehicle")
+    photos: Mapped[list["VehiclePhoto"]] = relationship(back_populates="vehicle", cascade="all, delete-orphan")
 
 
 class Service(Base):
@@ -165,3 +166,15 @@ class ChecklistPhoto(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     checklist: Mapped[VehicleChecklist] = relationship(back_populates="photos")
+
+
+class VehiclePhoto(Base):
+    __tablename__ = "vehicle_photos"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    vehicle_id: Mapped[int] = mapped_column(ForeignKey("vehicles.id"))
+    file_path: Mapped[str] = mapped_column(String(300))
+    caption: Mapped[str | None] = mapped_column(String(200))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    vehicle: Mapped[Vehicle] = relationship(back_populates="photos")

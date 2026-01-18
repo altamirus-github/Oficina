@@ -118,6 +118,23 @@ class Vehicle(VehicleBase):
         from_attributes = True
 
 
+class VehiclePhotoBase(BaseModel):
+    file_path: str
+    caption: str | None = None
+
+
+class VehiclePhoto(VehiclePhotoBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class VehicleWithPhotos(Vehicle):
+    photos: list[VehiclePhoto] = []
+
+
 class ServiceBase(BaseModel):
     name: str
     description: str | None = None

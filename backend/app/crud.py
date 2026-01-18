@@ -87,6 +87,16 @@ def update_vehicle(db: Session, vehicle: models.Vehicle, payload: schemas.Vehicl
     return vehicle
 
 
+def add_vehicle_photo(
+    db: Session, vehicle: models.Vehicle, file_path: str, caption: str | None
+) -> models.VehiclePhoto:
+    photo = models.VehiclePhoto(vehicle=vehicle, file_path=file_path, caption=caption)
+    db.add(photo)
+    db.commit()
+    db.refresh(photo)
+    return photo
+
+
 def create_service(db: Session, payload: schemas.ServiceCreate) -> models.Service:
     service = models.Service(**payload.model_dump())
     db.add(service)
