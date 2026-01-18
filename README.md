@@ -28,6 +28,11 @@ docker stack deploy -c docker-stack.yml oficina
 
 Observacao: em Swarm, o `build` do compose nao e aplicado. Se usar Portainer, suba a stack apontando para a imagem `oficina:latest` ou publique a imagem em um registry.
 
+Nota final:
+- Acesso local: `http://localhost:8000/frontend/index.html`
+- Usuario demo: `demo`
+- Senha demo: `demo123`
+
 ## Executar API
 ```
 python -m venv backend/.venv
