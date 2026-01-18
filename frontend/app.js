@@ -512,7 +512,7 @@ function parseFormData(form) {
 }
 
 async function createRecord(moduleKey, payload) {
-  const response = await fetch(`${API_BASE}${modules[moduleKey].endpoint}`, {
+  const response = await fetch(`${API_BASE}${modules[moduleKey].endpoint}/`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeaders() },
     body: JSON.stringify(payload)
