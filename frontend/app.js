@@ -1019,6 +1019,7 @@ function bindEvents() {
 
   elements.loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+    event.stopPropagation();
     elements.loginError.textContent = "";
     const formData = new FormData(elements.loginForm);
     const username = formData.get("username");
