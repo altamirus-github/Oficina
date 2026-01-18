@@ -223,6 +223,7 @@ const elements = {
   userMenu: document.getElementById("user-menu"),
   userMenuTrigger: document.getElementById("user-menu-trigger"),
   userMenuDropdown: document.getElementById("user-menu-dropdown"),
+  profileSettings: document.getElementById("profile-settings"),
   profilePageButton: document.getElementById("profile-page"),
   profilePageSection: document.getElementById("profile-page-section"),
   profileName: document.getElementById("profile-name"),
@@ -1070,6 +1071,21 @@ function bindEvents() {
   });
 
   elements.profileButton.addEventListener("click", async () => {
+    try {
+      const profile = await fetchProfile();
+      const form = elements.profileForm;
+      form.querySelector("[name='name']").value = profile.name || "";
+      form.querySelector("[name='email']").value = profile.email || "";
+      form.querySelector("[name='phone']").value = profile.phone || "";
+      form.querySelector("[name='new_password']").value = "";
+      openProfileModal();
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  elements.profileSettings.addEventListener("click", async () => {
+    elements.userMenuDropdown.classList.remove("active");
     try {
       const profile = await fetchProfile();
       const form = elements.profileForm;
