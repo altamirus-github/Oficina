@@ -14,9 +14,11 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 ADMIN_USER = os.getenv("ADMIN_USER", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
-DEMO_USER = os.getenv("DEMO_USER", "demo")
-DEMO_PASSWORD = os.getenv("DEMO_PASSWORD", "demo123")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "123456")
+SUPERVISOR_USER = os.getenv("SUPERVISOR_USER", "supervisor")
+SUPERVISOR_PASSWORD = os.getenv("SUPERVISOR_PASSWORD", "123456")
+OPERATOR_USER = os.getenv("OPERATOR_USER", "operador")
+OPERATOR_PASSWORD = os.getenv("OPERATOR_PASSWORD", "123456")
 
 
 class UserToken:
@@ -52,24 +54,39 @@ def revoke_token(db: Session, token_value: str, user_id: int | None = None) -> N
 
 
 def seed_users(db: Session) -> None:
-    if db.query(models.User).count() > 0:
-        return
+    defaults = [
+        {
+            "name": "Administrador",
+            "username": ADMIN_USER,
+            "role": "admin",
+            "password": ADMIN_PASSWORD,
+        },
+        {
+            "name": "Supervisor",
+            "username": SUPERVISOR_USER,
+            "role": "supervisor",
+            "password": SUPERVISOR_PASSWORD,
+        },
+        {
+            "name": "Operador",
+            "username": OPERATOR_USER,
+            "role": "operator",
+            "password": OPERATOR_PASSWORD,
+        },
+    ]
 
-    admin = models.User(
-        name="Administrador",
-        username=ADMIN_USER,
-        role="admin",
-        password_hash=hash_password(ADMIN_PASSWORD),
-        is_active=True,
-    )
-    demo = models.User(
-        name="Demo",
-        username=DEMO_USER,
-        role="operator",
-        password_hash=hash_password(DEMO_PASSWORD),
-        is_active=True,
-    )
-    db.add_all([admin, demo])
+    for data in defaults:
+        existing = db.query(models.User).filter_by(username=data["username"]).first()
+        if existing:
+            continue
+        user = models.User(
+            name=data["name"],
+            username=data["username"],
+            role=data["role"],
+            password_hash=hash_password(data["password"]),
+            is_active=True,
+        )
+        db.add(user)
     db.commit()
 
 

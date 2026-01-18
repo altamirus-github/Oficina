@@ -7,9 +7,10 @@ services:
       ADMIN_USER: admin
       ADMIN_PASSWORD: defina_uma_senha
       ADMIN_TOKEN: static-admin-token
-      DEMO_USER: demo
-      DEMO_PASSWORD: demo123
-      DEMO_TOKEN: static-demo-token
+      SUPERVISOR_USER: supervisor
+      SUPERVISOR_PASSWORD: defina_uma_senha
+      OPERATOR_USER: operador
+      OPERATOR_PASSWORD: defina_uma_senha
       DATABASE_URL: sqlite:////data/oficina.db
     volumes:
       - oficina_db:/data

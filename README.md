@@ -31,8 +31,7 @@ Observacao: em Swarm, o `build` do compose nao e aplicado. Se usar Portainer, su
 
 Nota final:
 - Acesso local: `http://localhost:8090/frontend/index.html`
-- Usuario demo: `demo`
-- Senha demo: `demo123`
+- Usuarios padrao: `admin`, `supervisor`, `operador`
 
 Fotos de veiculos:
 - Cada veiculo deve ter entre 4 e 10 fotos com descricao.
