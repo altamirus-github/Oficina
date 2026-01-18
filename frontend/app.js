@@ -217,7 +217,10 @@ const elements = {
   sessionName: document.getElementById("session-name"),
   sessionRole: document.getElementById("session-role"),
   loginButton: document.getElementById("login-button"),
-  logoutButton: document.getElementById("logout-button")
+  logoutButton: document.getElementById("logout-button"),
+  userMenu: document.getElementById("user-menu"),
+  userMenuTrigger: document.getElementById("user-menu-trigger"),
+  userMenuDropdown: document.getElementById("user-menu-dropdown")
 };
 
 function authHeaders() {
@@ -234,6 +237,7 @@ function setSessionUI() {
   elements.logoutButton.style.display = loggedIn ? "" : "none";
   elements.profileButton.style.display = loggedIn ? "" : "none";
   elements.loginButton.style.display = loggedIn ? "none" : "";
+  elements.userMenu.style.display = loggedIn ? "" : "none";
 }
 
 function forceLogout(message) {
@@ -248,6 +252,7 @@ function forceLogout(message) {
   localStorage.removeItem(NAME_KEY);
   showLogin();
   setSessionUI();
+  elements.userMenuDropdown.classList.remove("active");
 }
 
 async function fetchModuleData(moduleKey) {
@@ -989,6 +994,16 @@ function bindEvents() {
       // ignore
     } finally {
       forceLogout();
+    }
+  });
+
+  elements.userMenuTrigger.addEventListener("click", () => {
+    elements.userMenuDropdown.classList.toggle("active");
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!elements.userMenu.contains(event.target)) {
+      elements.userMenuDropdown.classList.remove("active");
     }
   });
 

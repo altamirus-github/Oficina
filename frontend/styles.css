@@ -339,22 +339,67 @@ body {
   flex-wrap: wrap;
 }
 
-.session-info {
-  display: grid;
-  gap: 4px;
+.user-menu {
+  position: relative;
+}
+
+.user-menu__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 8px 12px;
   border-radius: 12px;
   background: var(--panel);
   border: 1px solid var(--border);
-  text-align: right;
-  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
 }
 
-.session-role {
+.user-menu__icon {
+  font-size: 16px;
+}
+
+.user-menu__dropdown {
+  position: absolute;
+  right: 0;
+  top: 48px;
+  background: var(--panel-strong);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  min-width: 200px;
+  display: none;
+  flex-direction: column;
+  padding: 10px;
+  gap: 8px;
+  z-index: 5;
+}
+
+.user-menu__dropdown.active {
+  display: flex;
+}
+
+.user-menu__item {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.user-menu__status {
+  font-size: 12px;
   color: var(--accent-2);
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  font-size: 10px;
+}
+
+.user-menu__action {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
 }
 
 .table__cell {
