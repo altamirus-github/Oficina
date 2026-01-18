@@ -10,9 +10,9 @@ services:
       DEMO_USER: demo
       DEMO_PASSWORD: demo123
       DEMO_TOKEN: static-demo-token
-      DATABASE_URL: sqlite:///./oficina.db
+      DATABASE_URL: sqlite:///./data/oficina.db
     volumes:
-      - oficina_db:/app/backend/oficina.db
+      - oficina_db:/data
       - oficina_uploads:/app/backend/app/uploads
     deploy:
       replicas: 1
