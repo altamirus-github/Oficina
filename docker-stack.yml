@@ -3,9 +3,6 @@ version: "3.8"
 services:
   oficina:
     image: oficina:latest
-    ports:
-      - "8090:8000"
-      - "4433:8000"
     environment:
       ADMIN_USER: admin
       ADMIN_PASSWORD: defina_uma_senha
@@ -21,7 +18,20 @@ services:
       replicas: 1
       restart_policy:
         condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.oficina.rule=Host(`oficina.altamirus.com.br`)"
+        - "traefik.http.routers.oficina.entrypoints=web8090,websecure4433"
+        - "traefik.http.routers.oficina.tls=true"
+        - "traefik.http.services.oficina.loadbalancer.server.port=8000"
+    networks:
+      - traefik
+      - default
 
 volumes:
   oficina_db:
   oficina_uploads:
+
+networks:
+  traefik:
+    external: true
