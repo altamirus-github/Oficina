@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, Form, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -11,9 +11,15 @@ security = HTTPBearer()
 
 
 @router.post("/login")
-def login(payload: dict, db: Session = Depends(get_db)):
-    username = payload.get("username")
-    password = payload.get("password")
+def login(
+    payload: dict | None = Body(None),
+    username: str | None = Form(None),
+    password: str | None = Form(None),
+    db: Session = Depends(get_db),
+):
+    if payload:
+        username = payload.get("username") or username
+        password = payload.get("password") or password
     if not username or not password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Credenciais invalidas")
     user = db.query(models.User).filter_by(username=username).first()
