@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oficina Mecânica — Painel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="login" id="login">
+    <div class="login__card">
+      <h2>Acesso ao painel</h2>
+      <p>Entre com usuario e senha para liberar o dashboard.</p>
+      <form id="login-form">
+        <label for="username">Usuario</label>
+        <input id="username" name="username" type="text" placeholder="Usuario" required />
+        <label for="password">Senha</label>
+        <input id="password" name="password" type="password" placeholder="Senha" required />
+        <button class="primary" type="submit">Entrar</button>
+        <span id="login-error" class="login__error"></span>
+      </form>
+    </div>
+  </div>
+  <div class="ambient"></div>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand__mark">OM</div>
+        <div>
+          <h1>Oficina</h1>
+          <p>Mecânica Master</p>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav__item active" data-module="clients">Clientes</button>
+        <button class="nav__item" data-module="vehicles">Veículos</button>
+        <button class="nav__item" data-module="providers">Fornecedores</button>
+        <button class="nav__item" data-module="products">Produtos</button>
+        <button class="nav__item" data-module="services">Serviços</button>
+        <button class="nav__item" data-module="orders">Ordens</button>
+        <button class="nav__item" data-module="finance">Financeiro</button>
+        <button class="nav__item" data-module="checklists">Checklists</button>
+      </nav>
+      <div class="sidebar__footer">
+        <p>API pronta para integrar com apps e PDV.</p>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="header">
+        <div>
+          <h2 id="module-title">Clientes</h2>
+          <p id="module-subtitle">Gestao completa da base de clientes.</p>
+        </div>
+        <div class="header__actions">
+          <button id="refresh" class="ghost">Atualizar</button>
+          <button id="create" class="primary">Novo cadastro</button>
+        </div>
+      </header>
+
+      <section class="stats" id="stats">
+        <article class="stat">
+          <span>Clientes</span>
+          <strong id="stat-clients">0</strong>
+          <em>Relacionamento ativo</em>
+        </article>
+        <article class="stat">
+          <span>Veiculos</span>
+          <strong id="stat-vehicles">0</strong>
+          <em>Em acompanhamento</em>
+        </article>
+        <article class="stat">
+          <span>Ordens</span>
+          <strong id="stat-orders">0</strong>
+          <em>Fluxo de servico</em>
+        </article>
+        <article class="stat">
+          <span>Produtos</span>
+          <strong id="stat-products">0</strong>
+          <em>Inventario atual</em>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel__header">
+          <div>
+            <h3 id="table-title">Lista</h3>
+            <p id="table-caption">Registros mais recentes do modulo.</p>
+          </div>
+          <div class="panel__filters">
+            <input id="search" type="search" placeholder="Pesquisar..." />
+          </div>
+        </div>
+        <div class="table" id="table"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal__card">
+      <div class="modal__header">
+        <h3 id="modal-title">Novo cadastro</h3>
+        <button id="close">Fechar</button>
+      </div>
+      <form id="form" class="form"></form>
+      <div class="modal__footer">
+        <button id="cancel" class="ghost" type="button">Cancelar</button>
+        <button id="save" class="primary" type="submit">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
