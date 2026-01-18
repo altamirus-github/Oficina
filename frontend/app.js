@@ -762,6 +762,10 @@ function hideLogin() {
 async function loadModule(moduleKey) {
   state.active = moduleKey;
   elements.search.value = "";
+  if (moduleKey === "admin" && state.role !== "admin") {
+    alert("Acesso restrito ao administrador.");
+    return;
+  }
   if (moduleKey === "profile") {
     elements.moduleTitle.textContent = "Perfil";
     elements.moduleSubtitle.textContent = "Dados da sessao e configuracoes do usuario.";
@@ -791,7 +795,7 @@ function openModal() {
     : `Novo ${modules[state.active].title}`;
   buildForm(state.active);
 
-  if (state.active === "users" && state.editing) {
+  if (state.active === "admin" && state.editing) {
     const passwordInput = elements.form.querySelector("input[name='password']");
     if (passwordInput) {
       passwordInput.parentElement.remove();
@@ -827,11 +831,7 @@ function bindEvents() {
     });
   });
 
-  elements.navItems.forEach((item) => {
-    if (item.dataset.module === "users" && state.role !== "admin") {
-      item.style.display = "none";
-    }
-  });
+  applyPermissions();
 
   elements.refresh.addEventListener("click", () => loadModule(state.active));
   elements.create.addEventListener("click", openModal);

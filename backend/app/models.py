@@ -7,6 +7,7 @@ from .database import Base
 
 class Address(Base):
     __tablename__ = "addresses"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     street: Mapped[str | None] = mapped_column(String(200))
@@ -20,6 +21,7 @@ class Address(Base):
 
 class Client(Base):
     __tablename__ = "clients"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(150))
@@ -37,6 +39,7 @@ class Client(Base):
 
 class Provider(Base):
     __tablename__ = "providers"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(150))
@@ -54,6 +57,7 @@ class Provider(Base):
 
 class Vehicle(Base):
     __tablename__ = "vehicles"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"))
@@ -72,6 +76,7 @@ class Vehicle(Base):
 
 class Service(Base):
     __tablename__ = "services"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(150))
@@ -81,6 +86,7 @@ class Service(Base):
 
 class Product(Base):
     __tablename__ = "products"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     provider_id: Mapped[int | None] = mapped_column(ForeignKey("providers.id"))
@@ -97,6 +103,7 @@ class Product(Base):
 
 class Order(Base):
     __tablename__ = "orders"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"))
@@ -115,6 +122,7 @@ class Order(Base):
 
 class OrderItem(Base):
     __tablename__ = "order_items"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     order_id: Mapped[int] = mapped_column(ForeignKey("orders.id"))
@@ -133,6 +141,7 @@ class OrderItem(Base):
 
 class FinancialEntry(Base):
     __tablename__ = "financial_entries"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     entry_type: Mapped[str] = mapped_column(String(20))  # income|expense
@@ -145,6 +154,7 @@ class FinancialEntry(Base):
 
 class VehicleChecklist(Base):
     __tablename__ = "vehicle_checklists"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     vehicle_id: Mapped[int] = mapped_column(ForeignKey("vehicles.id"))
@@ -158,6 +168,7 @@ class VehicleChecklist(Base):
 
 class ChecklistPhoto(Base):
     __tablename__ = "checklist_photos"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     checklist_id: Mapped[int] = mapped_column(ForeignKey("vehicle_checklists.id"))
@@ -170,6 +181,7 @@ class ChecklistPhoto(Base):
 
 class VehiclePhoto(Base):
     __tablename__ = "vehicle_photos"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     vehicle_id: Mapped[int] = mapped_column(ForeignKey("vehicles.id"))
@@ -182,6 +194,7 @@ class VehiclePhoto(Base):
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(150))
@@ -200,6 +213,7 @@ class User(Base):
 
 class AuthToken(Base):
     __tablename__ = "auth_tokens"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     token: Mapped[str] = mapped_column(String(120), unique=True, index=True)

@@ -14,6 +14,11 @@ def _ensure_sqlite_sequence() -> None:
     if not str(engine.url).startswith("sqlite"):
         return
     with engine.begin() as conn:
+        exists = conn.exec_driver_sql(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='sqlite_sequence'"
+        ).fetchone()
+        if not exists:
+            return
         for table in [
             "addresses",
             "clients",
